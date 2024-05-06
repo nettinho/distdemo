@@ -1,0 +1,23 @@
+<div class="w-full flex-col">
+  <div class="m-4 p-4 border rounded">
+    <b>Conectado al nodo:</b>
+    <%= @my_node %>
+  </div>
+
+  <div class="flex m-4 p-4 border rounded">
+    <div class="grow"></div>
+    <div class="flex-col">
+      <div class="text-center font-bold border-b-2">Resto de nodos del cluster</div>
+      <div id="nodes_list" phx-update="stream">
+        <div
+          :for={{dom_id, %{id: node}} <- @streams.nodes}
+          id={dom_id}
+          class="m-2 p-2 border-b flex gap-2 items-center"
+        >
+          <span><%= node %></span>
+          <.button phx-click="kill_node" phx-value-node={node}>Kill</.button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
