@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: distdemo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: distdemo
+  template:
+    metadata:
+      labels:
+        app: distdemo
+    spec:
+      containers:
+        - name: distdemo
+          image: distdemo:7
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 4000
+          env:
+            - name: SECRET_KEY_BASE
+              value: aeEsdwMvxHKTWhcsHS5TTMOOOqeU6IH0u4isBX6gZPygkEpOJyNKSKV26eOuq7fL
+            - name: PHX_HOST
+              value: localhost
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          # resources:
+          #   requests:
+          #     cpu: "400m"
+          #     memory: "512Mi"
+          #   limits:
+          #     cpu: "1000m"
+          #     memory: "8Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: distdemo-headless
+spec:
+  selector:
+    app: distdemo
+  type: ClusterIP
+  clusterIP: None

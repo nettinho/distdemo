@@ -1,21 +1,94 @@
 <div class="w-full flex-col">
-  <div class="m-4 p-4 border rounded">
-    <b>Conectado al nodo:</b>
-    <%= @my_node %>
+  <div>
+    <.button phx-click="run_task">Lanzar tarea</.button>
+    <.button phx-click="run_n_tasks" phx-value-count={5}>Lanzar 5 tarea</.button>
+    <.button phx-click="clear_all">Limpiar completados</.button>
+    <.button id="update_all_queue" phx-hook="UpdateAllConfig" phx-value-prop={:queue_delay}>
+      Actualizar tiempos cola
+    </.button>
+    <.button id="update_all_run" phx-hook="UpdateAllConfig" phx-value-prop={:run_delay}>
+      Actualizar tiempos exec
+    </.button>
   </div>
+  <div class="w-full flex-col" id="nodes" phx-update="stream">
+    <div :for={{idx, node} <- @streams.nodes} id={idx}>
+      <div
+        :if={:disconnected in Map.keys(node)}
+        class="my-4 border rounded-xl flex-col items-center bg-slate-100"
+      >
+        <div class="w-full py-1 px-4 font-mono rounded-md bg-amber-700 text-amber-100 flex items-center justify-between ">
+          <div>
+            <span class="font-bold mr-1">( <%= node.id %> )</span>
+            <span class="text-sm ">
+              NO ES WORKER
+            </span>
+          </div>
+          <div>
+            <.bar_button phx-click="kill_node" phx-value-node={node.id} title="Matar nodo">
+              X
+            </.bar_button>
+          </div>
+        </div>
+      </div>
+      <div
+        :if={:disconnected not in Map.keys(node)}
+        class="my-4 border rounded-xl flex-col items-center bg-slate-100"
+      >
+        <div class="w-full py-1 px-4 font-mono rounded-t-xl bg-slate-700 text-slate-100 flex items-center justify-between ">
+          <div>
+            <span class="font-bold mr-1">( <%= node.id %> )</span>
+            <span
+              id={"queue_delay-#{node.id}"}
+              class="text-xs cursor-pointer"
+              phx-hook="UpdateConfig"
+              phx-value-node={node.id}
+              phx-value-prop={:queue_delay}
+            >
+              Cola: <%= node.queue_delay %>ms
+            </span>
 
-  <div class="flex m-4 p-4 border rounded">
-    <div class="grow"></div>
-    <div class="flex-col">
-      <div class="text-center font-bold border-b-2">Resto de nodos del cluster</div>
-      <div id="nodes_list" phx-update="stream">
-        <div
-          :for={{dom_id, %{id: node}} <- @streams.nodes}
-          id={dom_id}
-          class="m-2 p-2 border-b flex gap-2 items-center"
-        >
-          <span><%= node %></span>
-          <.button phx-click="kill_node" phx-value-node={node}>Kill</.button>
+            <span
+              id={"run_delay-#{node.id}"}
+              class="text-xs cursor-pointer"
+              phx-hook="UpdateConfig"
+              phx-value-node={node.id}
+              phx-value-prop={:run_delay}
+            >
+              Exec: <%= node.run_delay %>ms
+            </span>
+          </div>
+          <div>
+            <.bar_button phx-click="clear" phx-value-node={node.id} title="Limpiar completados">
+              Limpiar
+            </.bar_button>
+            <.bar_button phx-click="kill_node" phx-value-node={node.id} title="Matar nodo">
+              X
+            </.bar_button>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="border rounded px-1 my-1 mx-2 w-1/2 flex-col items-center bg-white">
+            <span class="text-xs">COLA:</span>
+            <div class="m-1 h-8 flex items-center">
+              <.task_ball :for={task <- node.queue}>
+                <%= task %>
+              </.task_ball>
+            </div>
+          </div>
+
+          <div class="w-8 h-8 rounded-full border-2 border-black font-mono font-bold text-amber-800 flex items-center justify-center">
+            <div :if={not is_nil(node.running)}>
+              <%= node.running %>
+            </div>
+          </div>
+          <div class="border rounded px-1 my-1 mx-2 w-1/2 flex-col items-center bg-white">
+            <span class="text-xs">COMPLETADOS:</span>
+            <div class="m-1 h-8 flex items-center">
+              <.task_ball :for={task <- node.history}>
+                <%= task %>
+              </.task_ball>
+            </div>
+          </div>
         </div>
       </div>
     </div>

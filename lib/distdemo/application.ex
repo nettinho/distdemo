@@ -7,13 +7,16 @@ defmodule Distdemo.Application do
 
   @impl true
   def start(_type, _args) do
-    topologies = [
+    topologies = Application.get_env(:distdemo, :topologies)
+
+    [
       local: [
         strategy: Elixir.Cluster.Strategy.LocalEpmd
       ]
     ]
 
     children = [
+      Distdemo.Processor,
       DistdemoWeb.Telemetry,
       {Phoenix.PubSub, name: Distdemo.PubSub},
       # Start the Finch HTTP client for sending emails
@@ -22,18 +25,29 @@ defmodule Distdemo.Application do
       # {Distdemo.Worker, arg},
       # Start to serve requests, typically the last entry
       DistdemoWeb.Endpoint,
-      {Cluster.Supervisor, [topologies, [name: Distdemo.ClusterSupervisor]]}
-      # %{id: :pg, start: {:pg, :start_link, []}}
+      {Cluster.Supervisor,
+       [
+         [
+           local: [
+             strategy: Elixir.Cluster.Strategy.LocalEpmd
+           ]
+         ],
+         [name: Distdemo.ClusterSupervisor]
+       ]}
+      # %{id: :pg, start: {:pg, :start_link, []}},
     ]
+
+    Node.set_cookie(:cookie)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Distdemo.Supervisor]
+    opts = [
+      strategy: :one_for_one,
+      name: Distdemo.Supervisor,
+      distributed: true
+    ]
+
     Supervisor.start_link(children, opts)
-
-    # :pg.join(:super_cluster, self())
-
-    # link
   end
 
   # Tell Phoenix to update the endpoint configuration

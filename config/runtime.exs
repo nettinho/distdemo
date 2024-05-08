@@ -50,6 +50,16 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  config :distdemo, :topologies,
+    k8s: [
+      strategy: Elixir.Cluster.Strategy.Kubernetes.DNS,
+      config: [
+        service: System.get_env("CLUSTER_SERVICE") || "distdemo-headless",
+        application_name: System.get_env("APP_NAME") || "distdemo",
+        polling_interval: String.to_integer(System.get_env("CLUSTER_POLLING") || "1000")
+      ]
+    ]
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

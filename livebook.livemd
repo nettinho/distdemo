@@ -1,0 +1,73 @@
+# Distribuyendo Elixir
+
+## Process
+
+```elixir
+pid =
+  spawn(fn ->
+    receive do
+      msg -> IO.inspect("El proceso recibió el mensaje: #{msg}")
+    end
+  end)
+```
+
+```elixir
+Process.alive?(pid)
+```
+
+```elixir
+send(pid, "MENSAJE_1")
+```
+
+```elixir
+Process.alive?(pid)
+```
+
+## GenServer
+
+```elixir
+defmodule SimpleCounter do
+  use GenServer
+
+  def init(initial_count) do
+    {:ok, initial_count}
+  end
+
+  def handle_call(:count, _, state) do
+    new_state = state + 1
+    {:reply, new_state, new_state}
+  end
+end
+
+{:ok, server_pid} = GenServer.start_link(SimpleCounter, 0)
+```
+
+```elixir
+GenServer.call(server_pid, :count)
+```
+
+```elixir
+Process.alive?(server_pid)
+```
+
+```elixir
+Process.info(server_pid)
+```
+
+## Nodes
+
+```elixir
+Node.self()
+```
+
+```elixir
+Node.list()
+```
+
+```elixir
+Process.whereis(Distdemo.Processor)
+```
+
+```elixir
+:rpc.call(:"nodo1@nettos-MacBook-Pro", Process, :whereis, [Distdemo.Processor])
+```

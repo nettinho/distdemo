@@ -242,6 +242,28 @@ defmodule DistdemoWeb.CoreComponents do
     """
   end
 
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def bar_button(assigns) do
+    ~H"""
+    <button class="text-xs hover:bg-slate-500 py-1 px-2 rounded-xl border border-slate-400" {@rest}>
+      <%= render_slot(@inner_block) %>
+    </button>
+    """
+  end
+
+  slot :inner_block, required: true
+
+  def task_ball(assigns) do
+    ~H"""
+    <div class="h-6 w-6 bg-slate-700 text-white font-mono flex items-center justify-center font-bold text-xs rounded-full border-2 border-black m-1">
+      <%= render_slot(@inner_block) %>
+    </div>
+    """
+  end
+
   @doc """
   Renders an input with label and error messages.
 
